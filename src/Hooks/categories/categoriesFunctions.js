@@ -7,7 +7,18 @@ export const getCategories = async () => {
 }
 
 export const getSpacificCategory = async (id) => {
-    const { data, error } = await supabase.from("categories").select("*").eq("id", id).single();
-    if (error) throw new Error(error.message)
-    return data
+    // Ensure id is a number
+    const numericId = typeof id === 'number' ? id : parseInt(id, 10);
+    if (isNaN(numericId)) {
+        throw new Error("Invalid category ID");
+    }
+    
+    const { data, error } = await supabase
+        .from("categories")
+        .select("*")
+        .eq("id", numericId)
+        .single();
+    
+    if (error) throw new Error(error.message);
+    return data;
 }

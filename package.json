@@ -16,7 +16,7 @@
     "@mui/material": "^7.3.2",
     "@supabase/supabase-js": "^2.56.0",
     "@tailwindcss/vite": "^4.1.12",
-    "@tanstack/react-query": "^5.85.5",
+    "@tanstack/react-query": "^5.90.10",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.542.0",
@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@tanstack/eslint-plugin-query": "^5.91.2",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^5.0.2",

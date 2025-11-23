@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { createUserInDatabase } from "../lib/userFunctions";
+import { setCurrentUser } from "../lib/auth";
+import { toast } from "react-hot-toast";
 
 function Signup() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const validate = () => {
     const newErrors = {};
@@ -34,28 +38,32 @@ function Signup() {
   };
 
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length === 0) {
-      // Get existing users or empty array
-      const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
-
-      //  Check if username already exists
-      if (existingUsers.find((user) => user.username === username)) {
-        alert("Username already taken!");
-        return;
+      setIsLoading(true);
+      try {
+        // Create user in database (will get numeric ID from database)
+        const newUser = await createUserInDatabase(username, email, password);
+        
+        // Store user in localStorage with database ID
+        setCurrentUser(newUser);
+        
+        toast.success("Account created successfully! ✅");
+        navigate("/");
+      } catch (error) {
+        console.error("Signup error:", error);
+        if (error.message.includes("duplicate") || error.message.includes("unique")) {
+          toast.error("Username or email already exists!");
+        } else {
+          toast.error("Failed to create account. Please try again.");
+        }
+      } finally {
+        setIsLoading(false);
       }
-
-      // Add new user
-      const newUser = { username, email, password };
-      existingUsers.push(newUser);
-
-      localStorage.setItem("users", JSON.stringify(existingUsers));
-
-      navigate("/login");
     }
   };
 
@@ -127,9 +135,12 @@ function Signup() {
 
         <button
           type="submit"
-          className="w-full bg-teal-500 hover:bg-teal-600 text-white py-2 rounded-lg mt-4 outline-0"
+          disabled={isLoading}
+          className={`w-full bg-teal-500 hover:bg-teal-600 text-white py-2 rounded-lg mt-4 outline-0 ${
+            isLoading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
-          Sign Up
+          {isLoading ? "Creating Account..." : "Sign Up"}
         </button>
       </form>
     </div>

@@ -118,20 +118,31 @@ function Home()
                                 // Iterate Over All CategoriesItems Array And Return The CategoryItems That Match Our Category And Return Items Count From It
                                 let categoryItemsCount = categoriesItems.find((categoryItems)=>{
                                     return categoryItems.category_id === category.id
-                                }).categoryItemsCount
-                                return <Category key={category.id} image={category["image-url"]} title={category.name} itemsCount={categoryItemsCount}/>
+                                })?.categoryItemsCount || 0;
+                                return <Category key={category.id} id={category.id} image={category["image-url"]} title={category.name} itemsCount={categoryItemsCount}/>
                             })
                         }
                     </div>
                     {/* Products Section */}
                     <div className='grid grid-cols-1 min-[440px]:grid-cols-2 min-md:grid-cols-3 min-lg:grid-cols-4 min-xl:grid-cols-5 mb-10'>
-                        <DealProduct image={products[0]["image-url"]} title={products[0].name} quantity={products[0].stock_qty} rate={products[0].rating} price={products[0].discount_price} discountPrice={products[0].price} discount={productsDiscounts[0].discount}/>
+                        {products[0] && (
+                            <DealProduct 
+                                id={products[0].id} 
+                                image={products[0]["image-url"]} 
+                                title={products[0].name} 
+                                quantity={products[0].stock_qty} 
+                                rate={products[0].rating} 
+                                price={products[0].discount_price} 
+                                discountPrice={products[0].price} 
+                                discount={productsDiscounts[0]?.discount || 0}
+                            />
+                        )}
                         {
                             products.slice(0,6).map((product)=>{
                                 let productDiscount = productsDiscounts.find((productDiscount)=>{
                                     return productDiscount.product_id === product.id
-                                }).discount;
-                                return <Product key={product.id} image={product["image-url"]} title={product.name} quantity={product.stock_qty} rate={product.rating} price={product.discount_price} discountPrice={product.price} discount={productDiscount}/>
+                                })?.discount || 0;
+                                return <Product key={product.id} id={product.id} image={product["image-url"]} title={product.name} quantity={product.stock_qty} rate={product.rating} price={product.discount_price} discountPrice={product.price} discount={productDiscount}/>
                             })
                         }
                     </div>
@@ -197,9 +208,9 @@ function Home()
                                     }).map((product)=>{
                                         let productDiscount = productsDiscounts.find((productDiscount)=>{
                                             return productDiscount.product_id === product.id
-                                        }).discount;
-                                        return <SwiperSlide>
-                                            <Product key={product.id} image={product["image-url"]} title={product.name} quantity={product.stock_qty} rate={product.rating} price={product.discount_price} discountPrice={product.price} discount={productDiscount}/>
+                                        })?.discount || 0;
+                                        return <SwiperSlide key={product.id}>
+                                            <Product id={product.id} image={product["image-url"]} title={product.name} quantity={product.stock_qty} rate={product.rating} price={product.discount_price} discountPrice={product.price} discount={productDiscount}/>
                                             </SwiperSlide>
                                     })
                                 }
@@ -218,7 +229,8 @@ function Home()
                                 let product = products.find((product)=>{
                                     return product.id === productDiscount.product_id
                                 })
-                                return <Product key={product.id} image={product["image-url"]} title={product.name} quantity={product.stock_qty} rate={product.rating} price={product.discount_price} discountPrice={product.price} discount={productDiscount.discount}/>
+                                if (!product) return null;
+                                return <Product key={product.id} id={product.id} image={product["image-url"]} title={product.name} quantity={product.stock_qty} rate={product.rating} price={product.discount_price} discountPrice={product.price} discount={productDiscount.discount}/>
                             })
                         }
                         </div>

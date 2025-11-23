@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { setCurrentUser } from "../lib/auth";
+import { getUserFromDatabase } from "../lib/userFunctions";
+import { toast } from "react-hot-toast";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const validate = () => {
@@ -18,23 +22,30 @@ function Login() {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length === 0) {
-      const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
+      setIsLoading(true);
+      try {
+        // Get user from database
+        const foundUser = await getUserFromDatabase(username, password);
 
-      const foundUser = storedUsers.find(
-        (u) => u.username === username && u.password === password
-      );
-
-      if (foundUser) {
-        localStorage.setItem("currentUser", JSON.stringify(foundUser)); // keep login session
-        navigate("/home"); // redirect to home page
-      } else {
-        alert("Invalid username or password!");
+        if (foundUser) {
+          // Store user in localStorage with database ID
+          setCurrentUser(foundUser);
+          toast.success("Login successful! ✅");
+          navigate("/");
+        } else {
+          toast.error("Invalid username or password!");
+        }
+      } catch (error) {
+        console.error("Login error:", error);
+        toast.error("Login failed. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -87,9 +98,12 @@ function Login() {
 
         <button
           type="submit"
-          className="w-full bg-teal-500 hover:bg-teal-600 text-white py-2 rounded-lg mt-4 outline-0"
+          disabled={isLoading}
+          className={`w-full bg-teal-500 hover:bg-teal-600 text-white py-2 rounded-lg mt-4 outline-0 ${
+            isLoading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
-          Login
+          {isLoading ? "Logging in..." : "Login"}
         </button>
       </form>
     </div>

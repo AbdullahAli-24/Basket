@@ -13,6 +13,7 @@ import Signup from './Components/Signup.jsx';
 import Login from './Components/Login.jsx';
 import Blog from './Components/Blog.jsx'
 import Contact from "./Components/Contact.jsx";
+import CategoryPage from './Pages/CategoryPage/CategoryPage';
 function App() {
   let router = createBrowserRouter([
     {
@@ -28,6 +29,7 @@ function App() {
         { path: "blog", element:<Blog />},
         { path: "contact", element:<Contact />},
         { path: "paymoney", element:<Paymoney />},
+        { path: "category/:categoryId", element: <CategoryPage /> },
         { path: "*", element: <NotFound /> },
       ],
       

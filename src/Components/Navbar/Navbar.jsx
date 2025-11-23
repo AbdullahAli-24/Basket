@@ -1,15 +1,32 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { GoChevronDown } from "react-icons/go";
 import { LiaHandPaper } from "react-icons/lia";
 import { FaShoppingCart } from "react-icons/fa";
 import { IoSearch } from "react-icons/io5";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { IoClose } from "react-icons/io5";
+import useGetCartProducts from "../../Hooks/cart/useGetCartProducts";
+import useGetCategories from "../../Hooks/categories/useGetCategories";
+import { getCurrentUser } from "../../lib/auth";
 
 export default function Navbar() {
-  const [count, setCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
+  const currentUser = getCurrentUser();
+  const navigate = useNavigate();
+  const { data: cartData } = useGetCartProducts();
+  const { data: categories } = useGetCategories();
+  
+  // Calculate cart item count
+  const cartItems = cartData?.cart_items || [];
+  const count = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  
+  // Calculate total products count
+  const totalProducts = categories?.reduce((sum, cat) => {
+    // This is a placeholder - you might want to get actual product count
+    return sum + 1;
+  }, 0) || 50;
 
   const links = [
     { name: "Home", path: "/" },
@@ -97,8 +114,14 @@ export default function Navbar() {
           {/* Auth + Cart + Burger */}
           <div className="flex items-center space-x-6 mx-3">
             <div className="hidden md:flex space-x-6">
-              <Link to="/signup">Sign Up</Link>
-              <Link to="/login">Login</Link>
+              {currentUser ? (
+                <span className="text-gray-700">Welcome, {currentUser.username}</span>
+              ) : (
+                <>
+                  <Link to="/signup">Sign Up</Link>
+                  <Link to="/login">Login</Link>
+                </>
+              )}
             </div>
 
             {/* Cart */}
@@ -125,13 +148,47 @@ export default function Navbar() {
 
         {/* Navigation Links */}
         <div className="hidden md:flex items-center px-6 pb-5 justify-between">
-          <button className="bg-[#35AFA0] px-4 py-2 rounded-full flex items-center space-x-2 relative text-white">
-            <span className="text-lg">☰</span>
-            <span className="font-semibold">All Categories</span>
-            <span className="bg-white text-[#35AFA0] text-[10px] font-bold px-2 py-1 rounded-full absolute bottom-[-12px] left-[25px]">
-              TOTAL 50 PRODUCTS
-            </span>
-          </button>
+          <div className="relative" onMouseLeave={() => setShowCategories(false)}>
+            <button 
+              onClick={() => setShowCategories(!showCategories)}
+              onMouseEnter={() => setShowCategories(true)}
+              className="bg-[#35AFA0] px-4 py-2 rounded-full flex items-center space-x-2 relative text-white hover:bg-[#2a8f82] transition-colors"
+            >
+              <span className="text-lg">☰</span>
+              <span className="font-semibold">All Categories</span>
+              <GoChevronDown className="text-sm" />
+              <span className="bg-white text-[#35AFA0] text-[10px] font-bold px-2 py-1 rounded-full absolute bottom-[-12px] left-[25px]">
+                TOTAL {totalProducts} PRODUCTS
+              </span>
+            </button>
+            
+            {/* Categories Dropdown */}
+            {showCategories && (
+              <div 
+                className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[200px] max-h-[400px] overflow-y-auto"
+                onMouseEnter={() => setShowCategories(true)}
+              >
+                <Link
+                  to="/"
+                  onClick={() => setShowCategories(false)}
+                  className="block px-4 py-2 hover:bg-[#35AFA0] hover:text-white transition-colors font-semibold"
+                >
+                  All Products
+                </Link>
+                <hr />
+                {categories?.map((category) => (
+                  <Link
+                    key={category.id}
+                    to={`/category/${category.id}`}
+                    onClick={() => setShowCategories(false)}
+                    className="block px-4 py-2 hover:bg-[#35AFA0] hover:text-white transition-colors"
+                  >
+                    {category.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
 
           <nav className="ml-8 space-x-6 font-medium flex">
             {links.map((item, index) => (
@@ -157,12 +214,18 @@ export default function Navbar() {
             ))}
             <hr />
             <div className="flex items-center justify-between">
-              <Link to="/signup" onClick={() => setIsOpen(false)}>
-              Sign Up
-            </Link>
-            <Link  to="/login" onClick={() => setIsOpen(false)}>
-              Login
-            </Link>
+              {currentUser ? (
+                <span className="text-gray-700">Welcome, {currentUser.username}</span>
+              ) : (
+                <>
+                  <Link to="/signup" onClick={() => setIsOpen(false)}>
+                    Sign Up
+                  </Link>
+                  <Link to="/login" onClick={() => setIsOpen(false)}>
+                    Login
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
